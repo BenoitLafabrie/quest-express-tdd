@@ -10,47 +10,6 @@ describe("Test routes", () => {
     connection.query("TRUNCATE bookmark", done);
   });
 
-  // GET tests
-
-  it('GET / sends "Hello World" as json', (done) => {
-    request(app)
-      .get("/")
-      .expect(200)
-      .expect("Content-Type", /json/)
-      .then((response) => {
-        const expected = { message: "Hello World!" };
-        expect(response.body).toEqual(expected);
-        done();
-      });
-  });
-  describe("GET /bookmarks/:id", () => {
-    const testBookmark = { url: "https://nodejs.org/", title: "Node.js" };
-    beforeEach((done) => {
-      connection.query("TRUNCATE bookmark", () => {
-        connection.query("INSERT INTO bookmark SET ?", testBookmark, done);
-      });
-    });
-    it("GET /bookmarks/:id failed", (done) => {
-      request(app)
-        .get(`/bookmarks/${response.id}`)
-        .expect(404)
-        .then((response) => {
-          const expected = { error: "Bookmark not found" };
-          expect(response.body).toEqual(expected);
-          done();
-        });
-    });
-    it("GET /bookmarks/:id success", (done) => {
-      request(app)
-        .get(`/bookmarks/1`)
-        .expect(200)
-        .then((response) => {
-          expect(response.body).toEqual(testBookmark);
-          done();
-        });
-    });
-  });
-
   // POST tests
 
   it("POST /bookmarks failed", (done) => {
@@ -78,5 +37,49 @@ describe("Test routes", () => {
         expect(response.body).toEqual(expected);
         done();
       });
+  });
+
+  // GET tests
+
+  it('GET / sends "Hello World" as json', (done) => {
+    request(app)
+      .get("/")
+      .expect(200)
+      .expect("Content-Type", /json/)
+      .then((response) => {
+        const expected = { message: "Hello World!" };
+        expect(response.body).toEqual(expected);
+        done();
+      });
+  });
+  describe("GET /bookmarks/:id", () => {
+    const testBookmark = { url: "https://nodejs.org/", title: "Node.js" };
+    beforeEach((done) => {
+      connection.query("TRUNCATE bookmark", () => {
+        connection.query("INSERT INTO bookmark SET ?", testBookmark, done);
+      });
+    });
+    it("GET /bookmarks/:id failed", (done) => {
+      request(app)
+        .get("/bookmarks/999")
+        .expect(404)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const expected = { error: "Bookmark not found" };
+          expect(response.body).toEqual(expected);
+          done();
+        });
+    });
+    it("GET /bookmarks/:id success", (done) => {
+      request(app)
+        .get(`/bookmarks/1`)
+        .expect(200)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const expected = { id: 1, ...testBookmark };
+          expect(response.body).toEqual(expected);
+          done();
+        });
+    });
   });
 });

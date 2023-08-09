@@ -11,21 +11,24 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // GET
 app.get("/", (req, res) => res.json({ message: "Hello World!" }));
 app.get("/bookmarks/:id", (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id;
 
-  connection
-    .query("select * from bookmark where id = ?", [id])
-    .then(([bookmarks]) => {
-      if (bookmarks[0] != null) {
-        res.json(bookmarks[0]);
-      } else {
-        res.status(404).send("Bookmark not found");
+  connection.query(
+    "SELECT * FROM bookmark WHERE id = ?",
+    [id],
+    (error, results) => {
+      if (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
       }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error retrieving data from database");
-    });
+      if (results.length === 0) {
+        res.status(404).json({ error: "Bookmark not found" });
+        return;
+      }
+      const bookmark = results[0];
+      res.status(200).json(bookmark);
+    },
+  );
 });
 
 // POST
